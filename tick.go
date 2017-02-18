@@ -22,101 +22,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// XXX This program is currently a prototype.
-
 package main
 
 import (
-	"errors"
-	"fmt"
 	"os"
-	"path"
-	"time"
 
 	"github.com/urfave/cli"
+
+    "tick/track"
 )
-
-const prefix = "."
-
-type Track struct {
-    name string
-    path string
-}
-
-func buildTrackPath(prefix, trackName string) string {
-	return path.Join(prefix, trackName + ".csv")
-}
-
-func tickFormatTime(date time.Time) string {
-    // This is actually the idiomatic way to do it. Unbelievable.
-
-    return date.Format("2006-01-02")
-}
-
-func trackExists(trackName string) bool {
-    trackPath := buildTrackPath(prefix, trackName)
-	_, err := os.Stat(trackPath)
-
-	return !os.IsNotExist(err)
-}
-
-func createTrack(trackName string) error {
-	if trackName == "" {
-		return errors.New("tick: no track name specified")
-	}
-
-	trackPath := buildTrackPath(prefix, trackName)
-
-	if trackExists(trackPath) {
-		return errors.New(fmt.Sprintf("tick: track %q already exists", trackName))
-	}
-
-	newFile, err := os.Create(trackPath)
-	if err != nil {
-		return errors.New("tick: " + err.Error())
-	}
-
-	fmt.Printf("Created track %q\n", trackName)
-	newFile.Close()
-	return nil
-}
-
-func deleteTrack(trackName string) error {
-	if trackName == "" {
-		return errors.New("tick: no track name specified")
-	}
-
-	trackPath := buildTrackPath(prefix, trackName)
-
-	if !trackExists(trackName) {
-		return errors.New(fmt.Sprintf("tick: track %q does not exist", trackName))
-	}
-
-	err := os.Remove(trackPath)
-
-	if err != nil {
-		return errors.New("tick: " + err.Error())
-	}
-
-	fmt.Printf("Deleted track %q\n", trackName)
-	return nil
-}
-
-func tickTrack(trackName string, date time.Time) error {
-	// trackPath := buildTrackPath(prefix, trackName)
-
-	if !trackExists(trackName) {
-        return errors.New(fmt.Sprintf("tick: track %q does not exist", trackName))
-	}
-
-    fmt.Printf("ticked %q in %s\n", trackName, tickFormatTime(date))
-
-	return nil
-}
-
-func tickToday(trackName string) error {
-    return tickTrack(trackName, time.Now())
-}
 
 func main() {
 	tickApp := cli.NewApp()
@@ -124,10 +38,11 @@ func main() {
 	tickApp.Usage = "One bit journal for the command-line"
 	tickApp.Version = "0.0.1"
 
-    // The default behavior of tick is to add a tick to the track with
-    // time.Now() as the Tick time.
 	tickApp.Action = func(c *cli.Context) error {
-		err := tickToday(c.Args().First())
+        name := c.Args().First()
+		t := track.New(name)
+
+		err := t.TickToday()
 
         return err
 	}
@@ -137,8 +52,13 @@ func main() {
 			Name:  "create",
 			Usage: "create a new track",
 			Action: func(c *cli.Context) error {
-				err := createTrack(c.Args().First())
+                name := c.Args().First()
+                t := track.New(name)
 
+                err := t.Create()
+                if err == nil {
+                    fml.Printf("Created track %q\n", name)
+                }
 				return err
 			},
 		},
@@ -146,7 +66,13 @@ func main() {
 			Name:  "delete",
 			Usage: "delete an existing track",
 			Action: func(c *cli.Context) error {
-				err := deleteTrack(c.Args().First())
+                name := c.Args().First()
+                t := track.New(name)
+
+                err := t.Delete()
+                if err == nil {
+                    fml.Printf("Deleted track %q\n", name)
+                }
 
 				return err
 			},
