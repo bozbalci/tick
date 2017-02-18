@@ -29,7 +29,7 @@ import (
 
 	"github.com/urfave/cli"
 
-    "tick/track"
+	"tick/track"
 )
 
 func main() {
@@ -39,12 +39,12 @@ func main() {
 	tickApp.Version = "0.0.1"
 
 	tickApp.Action = func(c *cli.Context) error {
-        name := c.Args().First()
+		name := c.Args().First()
 		t := track.New(name)
 
 		err := t.TickToday()
 
-        return err
+		return err
 	}
 
 	tickApp.Commands = []cli.Command{
@@ -52,13 +52,13 @@ func main() {
 			Name:  "create",
 			Usage: "create a new track",
 			Action: func(c *cli.Context) error {
-                name := c.Args().First()
-                t := track.New(name)
+				name := c.Args().First()
+				t := track.New(name)
 
-                err := t.Create()
-                if err == nil {
-                    fml.Printf("Created track %q\n", name)
-                }
+				err := t.Create()
+				if err == nil {
+					fml.Printf("Created track %q\n", name)
+				}
 				return err
 			},
 		},
@@ -66,13 +66,13 @@ func main() {
 			Name:  "delete",
 			Usage: "delete an existing track",
 			Action: func(c *cli.Context) error {
-                name := c.Args().First()
-                t := track.New(name)
+				name := c.Args().First()
+				t := track.New(name)
 
-                err := t.Delete()
-                if err == nil {
-                    fml.Printf("Deleted track %q\n", name)
-                }
+				err := t.Delete()
+				if err == nil {
+					fml.Printf("Deleted track %q\n", name)
+				}
 
 				return err
 			},
