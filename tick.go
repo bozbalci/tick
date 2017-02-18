@@ -49,29 +49,31 @@ func main() {
 
 	tickApp.Commands = []cli.Command{
 		{
-			Name:  "create",
-			Usage: "create a new track",
+			Name:    "create",
+			Aliases: []string{"cr"},
+			Usage:   "create a new track",
 			Action: func(c *cli.Context) error {
 				name := c.Args().First()
 				t := track.New(name)
 
 				err := t.Create()
 				if err == nil {
-					fml.Printf("Created track %q\n", name)
+					fmt.Printf("Created track %q\n", name)
 				}
 				return err
 			},
 		},
 		{
-			Name:  "delete",
-			Usage: "delete an existing track",
+			Name:    "delete",
+			Aliases: []string{"del"},
+			Usage:   "delete an existing track",
 			Action: func(c *cli.Context) error {
 				name := c.Args().First()
 				t := track.New(name)
 
 				err := t.Delete()
 				if err == nil {
-					fml.Printf("Deleted track %q\n", name)
+					fmt.Printf("Deleted track %q\n", name)
 				}
 
 				return err
