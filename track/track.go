@@ -93,7 +93,12 @@ func (t Track) Delete() error {
 
 func (t Track) Tick(date time.Time) error {
 	if !t.Exists() {
-		return errors.New(fmt.Sprintf("tick: track %q does not exist", t.Name))
+		// Since the default behavior of the program is to call this function,
+		// t.Name is usually the name of a track. But there are cases where
+		// a command name is mistyped and this function is called. So the
+		// error will tell the user that t.Name is not a valid "command".
+		return errors.New(fmt.Sprintf("tick: %q is not a tick command. See \"tick help\".",
+			t.Name))
 	}
 
 	formattedDate := date.Format("2006-01-02")
