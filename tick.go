@@ -38,21 +38,10 @@ func main() {
 	tickApp.Name = "tick"
 	tickApp.Usage = "One bit journal for the command-line"
 	tickApp.Version = "0.0.1"
-
-	tickApp.Action = func(c *cli.Context) error {
-		name := c.Args().First()
-		t := track.New(name)
-
-		err := t.TickToday()
-
-		return err
-	}
-
 	tickApp.Commands = []cli.Command{
 		{
-			Name:    "create",
-			Aliases: []string{"cr"},
-			Usage:   "create a new track",
+			Name:  "create",
+			Usage: "create a new track",
 			Action: func(c *cli.Context) error {
 				name := c.Args().First()
 				t := track.New(name)
@@ -65,9 +54,8 @@ func main() {
 			},
 		},
 		{
-			Name:    "delete",
-			Aliases: []string{"del"},
-			Usage:   "delete an existing track",
+			Name:  "delete",
+			Usage: "delete an existing track",
 			Action: func(c *cli.Context) error {
 				name := c.Args().First()
 				t := track.New(name)
@@ -80,6 +68,32 @@ func main() {
 				return err
 			},
 		},
+		{
+			Name:    "tick",
+			Aliases: []string{"t"},
+			Usage:   "ticks a track",
+			Action: func(c *cli.Context) error {
+				name := c.Args().First()
+				t := track.New(name)
+
+				err := t.TickToday()
+				return err
+			},
+		},
+		{
+			Name:    "correlate",
+			Aliases: []string{"corr"},
+			Usage:   "correlate two tracks",
+			Action: func(c *cli.Context) error {
+				return nil
+			},
+		},
+	}
+
+	tickApp.CommandNotFound = func(c *cli.Context, cmd string) {
+		fmt.Fprintf(os.Stderr, "tick: '%s' is not a tick command. See 'tick help'.\n", cmd)
+
+		os.Exit(1)
 	}
 
 	tickApp.Run(os.Args)

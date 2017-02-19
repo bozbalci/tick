@@ -42,7 +42,7 @@ type Track struct {
 }
 
 func (t *Track) buildPath(prefix string) {
-	t.Path = path.Join(prefix, t.Name+".csv")
+	t.Path = path.Join(prefix, t.Name)
 }
 
 func (t Track) Exists() bool {
@@ -61,12 +61,12 @@ func (t Track) Create() error {
 	}
 
 	if t.Exists() {
-		return errors.New(fmt.Sprintf("tick: track %q already exists", t.Name))
+		return fmt.Errorf("tick: track %q already exists", t.Name)
 	}
 
 	newFile, err := os.Create(t.Path)
 	if err != nil {
-		return errors.New("tick: " + err.Error())
+		return fmt.Errorf("tick: %s", err.Error())
 	}
 
 	newFile.Close()
@@ -80,32 +80,31 @@ func (t Track) Delete() error {
 	}
 
 	if !t.Exists() {
-		return errors.New(fmt.Sprintf("tick: track %q does not exist", t.Name))
+		return fmt.Errorf("tick: track %q does not exist", t.Name)
 	}
 
 	err := os.Remove(t.Path)
 	if err != nil {
-		return errors.New("tick: " + err.Error())
+		return fmt.Errorf("tick: %s", err.Error())
 	}
 
 	return nil
 }
 
 func (t Track) Tick(date time.Time) error {
+	if t.Name == "" {
+		return errors.New("tick: no track name specified")
+	}
+
 	if !t.Exists() {
-		// Since the default behavior of the program is to call this function,
-		// t.Name is usually the name of a track. But there are cases where
-		// a command name is mistyped and this function is called. So the
-		// error will tell the user that t.Name is not a valid "command".
-		return errors.New(fmt.Sprintf("tick: %q is not a tick command. See \"tick help\".",
-			t.Name))
+		return fmt.Errorf("tick: track %q does not exist", t.Name)
 	}
 
 	formattedDate := date.Format("2006-01-02")
 
 	f, err := os.OpenFile(t.Path, os.O_RDWR|os.O_APPEND, 0660)
 	if err != nil {
-		return errors.New("tick: " + err.Error())
+		return fmt.Errorf("tick: %s", err.Error())
 	}
 
 	defer f.Close()
@@ -113,13 +112,12 @@ func (t Track) Tick(date time.Time) error {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if strings.HasPrefix(scanner.Text(), formattedDate) {
-			return errors.New(fmt.Sprintf("tick: track %q is already ticked on %s", t.Name,
-				formattedDate))
+			return fmt.Errorf("tick: track %q is already ticked on %s", t.Name, formattedDate)
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return errors.New("tick: " + err.Error())
+		return fmt.Errorf("tick: %s", err.Error())
 	}
 
 	writer := bufio.NewWriter(f)
@@ -131,6 +129,12 @@ func (t Track) Tick(date time.Time) error {
 
 func (t Track) TickToday() error {
 	return t.Tick(time.Now())
+}
+
+func Correlate(t1, t2 Track) float32 {
+	// TODO: Implement track.Correlate
+
+	return 0
 }
 
 func New(name string) *Track {
